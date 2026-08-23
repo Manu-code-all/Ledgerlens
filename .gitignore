@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets — never commit the API key
+.env
+.env.*
+!.env.example
+
+# Node / React
+node_modules/
+dist/
+.vite/
+
+# Editors / OS
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
+
+# Run outputs (regenerate with: python engine/generate_data.py)
+data/audit_log.jsonl
+data/results.json
