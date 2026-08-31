@@ -277,6 +277,48 @@ main {
   font-weight: 600;
 }
 
+/* ---- Audit Trail ---- */
+.audit-wrap { display: flex; flex-direction: column; gap: 12px; }
+
+.audit-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.audit-summary { display: flex; gap: 8px; }
+.audit-badge {
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.audit-badge-matched   { background: rgba(34,197,94,0.12);  border: 1px solid rgba(34,197,94,0.25);  color: var(--green); }
+.audit-badge-exception { background: rgba(239,68,68,0.12);  border: 1px solid rgba(239,68,68,0.25);  color: var(--red); }
+.audit-note { color: var(--muted); font-size: 12px; }
+
+.audit-ts { color: var(--muted); font-size: 12px; }
+.audit-reason { color: var(--muted); font-size: 12px; max-width: 340px; line-height: 1.5; }
+.audit-exception-row { background: rgba(239,68,68,0.04); }
+.muted-dash { color: var(--muted); }
+
+.stage-pill {
+  display: inline-block;
+  border-radius: 5px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.stage-rules { background: rgba(59,130,246,0.12);  color: var(--blue); }
+.stage-batch { background: rgba(168,85,247,0.12);  color: var(--purple); }
+.stage-ai    { background: rgba(34,197,94,0.12);   color: var(--green); }
+
 /* ---- Empty state ---- */
 .empty-state {
   background: var(--surface);

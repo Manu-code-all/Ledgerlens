@@ -3,8 +3,9 @@ import UploadPanel from "./components/UploadPanel";
 import MetricTiles from "./components/MetricTiles";
 import MatchesTable from "./components/MatchesTable";
 import ExceptionsTable from "./components/ExceptionsTable";
+import AuditTrail from "./components/AuditTrail";
 
-const TABS = ["Matches", "Exceptions"];
+const TABS = ["Matches", "Exceptions", "Audit Trail"];
 
 export default function App() {
   const [result, setResult]   = useState(null);
@@ -82,7 +83,9 @@ export default function App() {
                   <span className="tab-count">
                     {t === "Matches"
                       ? result.matches.length
-                      : result.exceptions.length}
+                      : t === "Exceptions"
+                      ? result.exceptions.length
+                      : (result.audit_trail || []).length}
                   </span>
                 </button>
               ))}
@@ -93,6 +96,9 @@ export default function App() {
             )}
             {tab === "Exceptions" && (
               <ExceptionsTable exceptions={result.exceptions} />
+            )}
+            {tab === "Audit Trail" && (
+              <AuditTrail entries={result.audit_trail || []} />
             )}
           </>
         )}

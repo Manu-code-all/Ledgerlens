@@ -192,10 +192,52 @@ async def reconcile(
         stats["incorrect"] = scoring["incorrect"]
         stats["missed"]    = scoring["missing"]
 
+    # ---- build audit trail ----
+    run_ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
+
+    audit_trail = []
+    for m in rule_result["matches"]:
+        audit_trail.append({
+            "ts":            run_ts,
+            "settlement_id": m["settlement_id"],
+            "bank_txn_id":   m["bank_txn_id"],
+            "stage":         "Stage 1 — Rules",
+            "strategy":      m["strategy"],
+            "decision":      "MATCHED",
+            "confidence":    1.0,
+            "reason":        m.get("reason", "Rule-based match"),
+        })
+    for m in batch_matches:
+        audit_trail.append({
+            "ts":            run_ts,
+            "settlement_id": m["settlement_id"],
+            "bank_txn_id":   m["bank_txn_id"],
+            "stage":         "Stage 1.5 — Batch",
+            "strategy":      "BATCH",
+            "decision":      "MATCHED",
+            "confidence":    m["confidence"],
+            "reason":        m.get("reason", "Batch arithmetic match"),
+        })
+    for res in agent_results:
+        bid  = res.get("bank_txn_id")
+        conf = res.get("confidence", 0.0)
+        is_matched = bid and conf >= CONFIDENCE_THRESHOLD and res["decision"] == "AI_MATCHED"
+        audit_trail.append({
+            "ts":            run_ts,
+            "settlement_id": res["settlement_id"],
+            "bank_txn_id":   bid or "",
+            "stage":         "Stage 2 — AI",
+            "strategy":      "AI",
+            "decision":      "MATCHED" if is_matched else "EXCEPTION",
+            "confidence":    conf,
+            "reason":        res.get("reason", ""),
+        })
+
     _last_result = {
-        "stats":      stats,
-        "matches":    final_matches,
-        "exceptions": final_exceptions,
+        "stats":       stats,
+        "matches":     final_matches,
+        "exceptions":  final_exceptions,
+        "audit_trail": audit_trail,
     }
 
     return _last_result
