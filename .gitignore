@@ -23,4 +23,8 @@ desktop.ini
 
 # Run outputs (regenerate with: python engine/generate_data.py)
 data/audit_log.jsonl
+data/audit_log_baseline.jsonl
+data/audit_log_full.jsonl
 data/results.json
+data/uploaded_settlements.csv
+data/uploaded_bank.csv
