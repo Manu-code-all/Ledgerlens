@@ -277,6 +277,125 @@ main {
   font-weight: 600;
 }
 
+/* ---- Near-miss suggestions ---- */
+.near-miss-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.near-miss-id   { font-size: 13px; }
+.near-miss-meta { font-size: 11px; color: var(--muted); }
+
+.near-miss-box {
+  background: rgba(245,158,11,0.06);
+  border-left: 3px solid var(--yellow);
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.near-miss-box-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.near-miss-label    { font-weight: 600; color: var(--yellow); font-size: 13px; }
+.near-miss-chips    { display: flex; gap: 6px; }
+.near-miss-desc     { font-size: 12px; color: var(--muted); font-style: italic; }
+.chip-yellow        { background: rgba(245,158,11,0.15); color: var(--yellow); }
+.near-miss-suggestion { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.suggestion-label   { font-weight: 600; color: var(--text); }
+
+/* ---- Confidence Distribution Chart ---- */
+.conf-chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.conf-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.conf-chart-title { font-size: 15px; font-weight: 700; }
+.conf-chart-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.conf-chart-legend {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--muted);
+  flex-wrap: wrap;
+}
+.legend-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.conf-bars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  height: 160px;
+  align-items: end;
+}
+.conf-bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.conf-bar-count {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1;
+}
+.conf-bar-track {
+  width: 100%;
+  height: 80px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+.conf-bar-fill-vert {
+  width: 100%;
+  border-radius: 6px 6px 0 0;
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 4px;
+}
+.conf-bar-bucket-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.conf-bar-desc {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.conf-insight {
+  background: rgba(99,102,241,0.06);
+  border: 1px solid rgba(99,102,241,0.15);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.insight-text { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.insight-highlight { font-weight: 700; }
+
 /* ---- Audit Trail ---- */
 .audit-wrap { display: flex; flex-direction: column; gap: 12px; }
 

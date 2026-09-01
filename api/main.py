@@ -14,7 +14,7 @@ import json
 import os
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import Optional
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
@@ -41,6 +41,84 @@ _last_result: Optional[dict] = None
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
 TRUTH_PATH = os.path.join(DATA_DIR, "ground_truth.csv")
+
+
+def find_near_miss(settlement: dict, all_bank_rows: list) -> dict:
+    """Find the closest bank entry for an unmatched settlement."""
+    try:
+        gross = float(settlement.get("gross_amount", 0))
+    except (ValueError, TypeError):
+        gross = 0.0
+    net = round(gross * (1 - 0.02 - 0.02 * 0.18), 2)
+
+    try:
+        setl_date = datetime.strptime(settlement.get("settlement_date", ""), "%Y-%m-%d").date()
+    except ValueError:
+        setl_date = None
+
+    best = None
+    best_score = float("inf")
+
+    for row in all_bank_rows:
+        try:
+            credit = float(row.get("credit_amount", 0))
+        except (ValueError, TypeError):
+            credit = 0.0
+
+        try:
+            bank_date = datetime.strptime(row.get("value_date", ""), "%Y-%m-%d").date()
+            date_diff = abs((bank_date - setl_date).days) if setl_date else 999
+        except (ValueError, TypeError):
+            date_diff = 999
+
+        amount_diff = abs(net - credit)
+        score = amount_diff + date_diff * 5
+
+        if score < best_score:
+            best_score = score
+            best = {
+                "bank_txn_id":  row.get("bank_txn_id", ""),
+                "credit_amount": credit,
+                "value_date":   row.get("value_date", ""),
+                "description":  row.get("description", ""),
+                "amount_diff":  round(amount_diff, 2),
+                "date_diff":    date_diff,
+            }
+
+    if best is None:
+        return {}
+
+    # Build a human-readable suggestion
+    amt  = best["amount_diff"]
+    days = best["date_diff"]
+
+    if amt < 1 and days > 3:
+        suggestion = (
+            f"Amount matches (within ₹{amt:.2f}) but date gap is {days} days "
+            f"— just outside the 3-day window. This is likely a delayed settlement. "
+            f"Consider extending the date window to {days + 1} days for this batch."
+        )
+    elif amt > 1 and days <= 3:
+        suggestion = (
+            f"Date is within window ({days} days) but amount differs by ₹{amt:.2f}. "
+            f"Possible non-standard fee rate or partial refund. "
+            f"Verify the fee structure for this merchant with Razorpay."
+        )
+    elif amt < 1 and days <= 3:
+        suggestion = (
+            f"Amount and date both align (₹{amt:.2f} diff, {days} days gap) but "
+            f"reference could not be confirmed. Manually cross-check order ID against "
+            f"Razorpay gateway records."
+        )
+    else:
+        suggestion = (
+            f"No close match found (nearest: ₹{amt:.2f} off, {days} days apart). "
+            f"This payment may be pending, refunded, or cancelled. "
+            f"Check the Razorpay dashboard for settlement status."
+        )
+
+    best["suggestion"] = suggestion
+    return best
 
 
 def parse_csv_bytes(content: bytes) -> list:
@@ -144,6 +222,8 @@ async def reconcile(
     final_matches = list(rule_result["matches"]) + batch_matches
     final_exceptions = []
 
+    setl_map = {s["settlement_id"]: s for s in setl_rows}
+
     for res in agent_results:
         sid  = res["settlement_id"]
         bid  = res.get("bank_txn_id")
@@ -157,10 +237,12 @@ async def reconcile(
                 "reason":        res.get("reason", ""),
             })
         else:
+            near_miss = find_near_miss(setl_map.get(sid, {}), bank_rows)
             final_exceptions.append({
                 "settlement_id": sid,
                 "reason":        res.get("reason", res.get("decision", "")),
                 "confidence":    conf,
+                "near_miss":     near_miss,
             })
 
     elapsed = round(time.time() - started, 1)
