@@ -5,6 +5,8 @@ import MatchesTable from "./components/MatchesTable";
 import ExceptionsTable from "./components/ExceptionsTable";
 import AuditTrail from "./components/AuditTrail";
 import ConfidenceChart from "./components/ConfidenceChart";
+import ExportButton from "./components/ExportButton";
+import AccuracyTracker from "./components/AccuracyTracker";
 
 const TABS = ["Matches", "Exceptions", "Audit Trail"];
 
@@ -76,12 +78,15 @@ export default function App() {
           <>
             <MetricTiles stats={result.stats} />
 
+            <AccuracyTracker stats={result.stats} />
+
             <ConfidenceChart
               matches={result.matches}
               exceptions={result.exceptions}
             />
 
-            <div className="tab-bar">
+            <div className="tab-bar-row">
+              <div className="tab-bar">
               {TABS.map((t) => (
                 <button
                   key={t}
@@ -98,6 +103,8 @@ export default function App() {
                   </span>
                 </button>
               ))}
+              </div>
+              <ExportButton result={result} />
             </div>
 
             {tab === "Matches" && (
