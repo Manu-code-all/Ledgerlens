@@ -38,7 +38,7 @@ def date_to_int(date_str):
     return (date(int(y), int(m), int(d)) - date(2026, 1, 1)).days
 
 
-def detect(unmatched_settlements, unclaimed_bank):
+def detect(unmatched_settlements, unclaimed_bank, fee_rate=FEE_RATE, date_window=MAX_LAG):
     """
     Find batch groups among unmatched settlements.
 
@@ -52,6 +52,12 @@ def detect(unmatched_settlements, unclaimed_bank):
     groups  = []
     claimed = set()                      # bank lines claimed so far
     used    = set()                      # settlement ids used so far
+
+    def net_with_rate(gross_str):
+        gross = float(gross_str)
+        fee   = round(gross * fee_rate + 1e-9, 2)
+        gst   = round(fee   * GST_RATE + 1e-9, 2)
+        return round(gross - fee - gst + 1e-9, 2)
 
     # Index bank lines for quick lookup
     bank_list = [row for bid, row in unclaimed_bank.items() if bid not in claimed]
@@ -68,7 +74,7 @@ def detect(unmatched_settlements, unclaimed_bank):
                 continue                 # different dates — not a batch
 
             setl_date_int = date_to_int(combo[0]["settlement_date"])
-            combined_net  = sum(net_of_fees(s["gross_amount"]) for s in combo)
+            combined_net  = sum(net_with_rate(s["gross_amount"]) for s in combo)
             combined_net  = round(combined_net + 1e-9, 2)
 
             # Look for a matching bank line
@@ -80,7 +86,7 @@ def detect(unmatched_settlements, unclaimed_bank):
                 bank_date_int = date_to_int(bank_row["value_date"])
 
                 amount_ok = abs(bank_amount - combined_net) <= TOLERANCE
-                date_ok   = 0 <= (bank_date_int - setl_date_int) <= MAX_LAG
+                date_ok   = 0 <= (bank_date_int - setl_date_int) <= date_window
 
                 if amount_ok and date_ok:
                     bid = bank_row["bank_txn_id"]
