@@ -21,7 +21,7 @@ FEE, LAG, GARBLED, BATCH — are exactly the ones the agent will handle.
 import csv
 import json
 import time
-from datetime import datetime
+from datetime import datetime, date as date_type
 
 
 def load_csv(path):
@@ -30,7 +30,7 @@ def load_csv(path):
         return list(csv.DictReader(f))
 
 
-def run(settlements_path, bank_path, audit_log_path=None):
+def run(settlements_path, bank_path, audit_log_path=None, date_window=0):
     """
     Match settlements against bank lines using deterministic rules.
 
@@ -77,11 +77,17 @@ def run(settlements_path, bank_path, audit_log_path=None):
         # ------------------------------------------------------------------
         if matched_bid is None:
             for bid, bank_row in unmatched_bank.items():
-                if (bank_row["credit_amount"] == gross and
-                        bank_row["value_date"] == setl_date):
-                    matched_bid      = bid
-                    matched_strategy = "AMT+DATE"
-                    break
+                if bank_row["credit_amount"] == gross:
+                    try:
+                        d1 = datetime.strptime(setl_date, "%Y-%m-%d").date()
+                        d2 = datetime.strptime(bank_row["value_date"], "%Y-%m-%d").date()
+                        date_ok = abs((d2 - d1).days) <= date_window
+                    except ValueError:
+                        date_ok = bank_row["value_date"] == setl_date
+                    if date_ok:
+                        matched_bid      = bid
+                        matched_strategy = "AMT+DATE"
+                        break
 
         # ------------------------------------------------------------------
         # Record the outcome

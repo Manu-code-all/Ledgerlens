@@ -4,6 +4,7 @@ import MetricTiles from "./components/MetricTiles";
 import MatchesTable from "./components/MatchesTable";
 import ExceptionsTable from "./components/ExceptionsTable";
 import AuditTrail from "./components/AuditTrail";
+import ConfidenceChart from "./components/ConfidenceChart";
 
 const TABS = ["Matches", "Exceptions", "Audit Trail"];
 
@@ -13,7 +14,7 @@ export default function App() {
   const [error, setError]     = useState(null);
   const [tab, setTab]         = useState("Matches");
 
-  async function handleUpload(settlements, bank) {
+  async function handleUpload(settlements, bank, params = {}) {
     setLoading(true);
     setError(null);
     setResult(null);
@@ -21,6 +22,9 @@ export default function App() {
     const form = new FormData();
     form.append("settlements", settlements);
     form.append("bank_statement", bank);
+    if (params.fee_rate             !== undefined) form.append("fee_rate",             params.fee_rate);
+    if (params.date_window          !== undefined) form.append("date_window",          params.date_window);
+    if (params.confidence_threshold !== undefined) form.append("confidence_threshold", params.confidence_threshold);
 
     try {
       const res = await fetch("http://localhost:8000/reconcile", {
@@ -71,6 +75,11 @@ export default function App() {
         {result && !loading && (
           <>
             <MetricTiles stats={result.stats} />
+
+            <ConfidenceChart
+              matches={result.matches}
+              exceptions={result.exceptions}
+            />
 
             <div className="tab-bar">
               {TABS.map((t) => (

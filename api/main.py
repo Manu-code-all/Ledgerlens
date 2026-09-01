@@ -17,7 +17,7 @@ import time
 from datetime import datetime, timezone, date
 from typing import Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 # Allow "python api/main.py" or "uvicorn api.main:app" from project root
@@ -144,6 +144,9 @@ def root():
 async def reconcile(
     settlements: UploadFile = File(...),
     bank_statement: UploadFile = File(...),
+    fee_rate: float = Form(default=0.02),
+    date_window: int = Form(default=3),
+    confidence_threshold: float = Form(default=0.5),
 ):
     """
     Accept two CSV uploads, run the three-stage pipeline, return results.
@@ -188,7 +191,7 @@ async def reconcile(
     started = time.time()
 
     # ---- Stage 1: rules ----
-    rule_result = rules.run(setl_path, bank_path)
+    rule_result = rules.run(setl_path, bank_path, date_window=date_window)
     claimed_by_rules = {m["bank_txn_id"] for m in rule_result["matches"]}
     all_bank_map = {r["bank_txn_id"]: r for r in bank_rows}
     unclaimed_bank = {bid: row for bid, row in all_bank_map.items()
@@ -197,7 +200,10 @@ async def reconcile(
     unmatched_settlements = [s for s in setl_rows if s["settlement_id"] not in matched_ids]
 
     # ---- Stage 1.5: batch detector ----
-    batch_groups, _ = batch_detector.detect(unmatched_settlements, unclaimed_bank)
+    batch_groups, _ = batch_detector.detect(
+        unmatched_settlements, unclaimed_bank,
+        fee_rate=fee_rate, date_window=date_window,
+    )
     batch_matches = []
     batch_used = set()
     for grp in batch_groups:
@@ -218,7 +224,7 @@ async def reconcile(
     agent_results = agent.run_batch(unmatched_settlements, unclaimed_bank)
 
     # ---- combine ----
-    CONFIDENCE_THRESHOLD = 0.5
+    CONFIDENCE_THRESHOLD = confidence_threshold
     final_matches = list(rule_result["matches"]) + batch_matches
     final_exceptions = []
 
@@ -273,6 +279,12 @@ async def reconcile(
         stats["correct"]   = scoring["correct"]
         stats["incorrect"] = scoring["incorrect"]
         stats["missed"]    = scoring["missing"]
+
+    stats["params"] = {
+        "fee_rate":             fee_rate,
+        "date_window":          date_window,
+        "confidence_threshold": confidence_threshold,
+    }
 
     # ---- build audit trail ----
     run_ts = datetime.now(timezone.utc).strftime("%H:%M:%S")
