@@ -1,8 +1,9 @@
 # Data generation and the rule-based matcher use only the Python standard
-# library, so nothing here is needed yet. These arrive in later stages.
+# library. Everything below is for the AI agent, the API layer, and testing.
 
-anthropic>=0.40.0      # the reconciliation agent
-fastapi>=0.115.0       # API layer for the React dashboard
+groq>=0.11.0            # the reconciliation agent (Qwen model)
+fastapi>=0.115.0        # API layer for the React dashboard
 uvicorn[standard]>=0.32.0
-python-multipart>=0.0.9  # file uploads
-python-dotenv>=1.0.0   # loads ANTHROPIC_API_KEY from .env
+python-multipart>=0.0.9 # file uploads
+python-dotenv>=1.0.0    # loads GROQ_API_KEY from .env
+pytest>=8.0.0            # engine test suite (tests/)
