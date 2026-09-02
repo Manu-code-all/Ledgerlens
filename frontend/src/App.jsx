@@ -7,6 +7,7 @@ import AuditTrail from "./components/AuditTrail";
 import ConfidenceChart from "./components/ConfidenceChart";
 import ExportButton from "./components/ExportButton";
 import AccuracyTracker from "./components/AccuracyTracker";
+import ROICalculator from "./components/ROICalculator";
 
 const TABS = ["Matches", "Exceptions", "Audit Trail"];
 
@@ -83,6 +84,8 @@ export default function App() {
             <MetricTiles stats={result.stats} />
 
             <AccuracyTracker stats={result.stats} />
+
+            <ROICalculator stats={result.stats} />
 
             <ConfidenceChart
               matches={result.matches}
