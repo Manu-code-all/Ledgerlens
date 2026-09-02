@@ -40,7 +40,11 @@ export default function App() {
       setResult(await res.json());
       setTab("Matches");
     } catch (e) {
-      setError(e.message);
+      if (e instanceof TypeError) {
+        setError("Cannot reach the LedgerLens API server. Make sure it is running at http://localhost:8000.");
+      } else {
+        setError(e.message);
+      }
     } finally {
       setLoading(false);
     }
