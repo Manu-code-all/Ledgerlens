@@ -62,50 +62,56 @@ def detect(unmatched_settlements, unclaimed_bank, fee_rate=FEE_RATE, date_window
     # Index bank lines for quick lookup
     bank_list = [row for bid, row in unclaimed_bank.items() if bid not in claimed]
 
-    for size in range(2, MAX_GROUP + 1):
-        for combo in combinations(unmatched_settlements, size):
-            # Skip if any settlement in this combo already claimed
-            if any(s["settlement_id"] in used for s in combo):
-                continue
+    # A batch only ever combines settlements sharing the same settlement_date,
+    # so group by date BEFORE generating combinations. Without this, the
+    # combination search is O(n^3) over the whole unmatched pool — at 1,000+
+    # unmatched settlements that becomes seconds-to-minutes of pure search.
+    # Grouping by date first bounds each combination search to a single day's
+    # settlements, which in practice is a small fraction of the total.
+    by_date = {}
+    for s in unmatched_settlements:
+        by_date.setdefault(s["settlement_date"], []).append(s)
 
-            # All settlements in a batch share the same settlement date
-            dates = {s["settlement_date"] for s in combo}
-            if len(dates) > 1:
-                continue                 # different dates — not a batch
-
-            setl_date_int = date_to_int(combo[0]["settlement_date"])
-            combined_net  = sum(net_with_rate(s["gross_amount"]) for s in combo)
-            combined_net  = round(combined_net + 1e-9, 2)
-
-            # Look for a matching bank line
-            for bank_row in bank_list:
-                if bank_row["bank_txn_id"] in claimed:
+    for same_day in by_date.values():
+        for size in range(2, MAX_GROUP + 1):
+            for combo in combinations(same_day, size):
+                # Skip if any settlement in this combo already claimed
+                if any(s["settlement_id"] in used for s in combo):
                     continue
 
-                bank_amount   = float(bank_row["credit_amount"])
-                bank_date_int = date_to_int(bank_row["value_date"])
+                setl_date_int = date_to_int(combo[0]["settlement_date"])
+                combined_net  = sum(net_with_rate(s["gross_amount"]) for s in combo)
+                combined_net  = round(combined_net + 1e-9, 2)
 
-                amount_ok = abs(bank_amount - combined_net) <= TOLERANCE
-                date_ok   = 0 <= (bank_date_int - setl_date_int) <= date_window
+                # Look for a matching bank line
+                for bank_row in bank_list:
+                    if bank_row["bank_txn_id"] in claimed:
+                        continue
 
-                if amount_ok and date_ok:
-                    bid = bank_row["bank_txn_id"]
-                    sids = [s["settlement_id"] for s in combo]
-                    groups.append({
-                        "bank_txn_id":     bid,
-                        "settlement_ids":  sids,
-                        "combined_net":    combined_net,
-                        "reason": (
-                            "Batch: %d settlements sum to %.2f "
-                            "(bank shows %.2f, diff %.4f)" % (
-                                size, combined_net, bank_amount,
-                                abs(bank_amount - combined_net)
-                            )
-                        ),
-                    })
-                    claimed.add(bid)
-                    for sid in sids:
-                        used.add(sid)
-                    break             # found a bank line for this combo
+                    bank_amount   = float(bank_row["credit_amount"])
+                    bank_date_int = date_to_int(bank_row["value_date"])
+
+                    amount_ok = abs(bank_amount - combined_net) <= TOLERANCE
+                    date_ok   = 0 <= (bank_date_int - setl_date_int) <= date_window
+
+                    if amount_ok and date_ok:
+                        bid = bank_row["bank_txn_id"]
+                        sids = [s["settlement_id"] for s in combo]
+                        groups.append({
+                            "bank_txn_id":     bid,
+                            "settlement_ids":  sids,
+                            "combined_net":    combined_net,
+                            "reason": (
+                                "Batch: %d settlements sum to %.2f "
+                                "(bank shows %.2f, diff %.4f)" % (
+                                    size, combined_net, bank_amount,
+                                    abs(bank_amount - combined_net)
+                                )
+                            ),
+                        })
+                        claimed.add(bid)
+                        for sid in sids:
+                            used.add(sid)
+                        break             # found a bank line for this combo
 
     return groups, claimed
