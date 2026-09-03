@@ -1,8 +1,8 @@
 const BUCKETS = [
-  { label: "90–100%", min: 0.90, max: 1.01, color: "#22c55e", desc: "High confidence" },
-  { label: "70–90%",  min: 0.70, max: 0.90, color: "#f59e0b", desc: "Medium confidence" },
-  { label: "50–70%",  min: 0.50, max: 0.70, color: "#f97316", desc: "Low confidence" },
-  { label: "<50%",    min: 0.00, max: 0.50, color: "#ef4444", desc: "Exceptions" },
+  { label: "90–100%", min: 0.90, max: 1.01, color: "#2f6feb", desc: "High confidence" },
+  { label: "70–90%",  min: 0.70, max: 0.90, color: "#7ea1f1", desc: "Medium confidence" },
+  { label: "50–70%",  min: 0.50, max: 0.70, color: "#c0d1f8", desc: "Low confidence" },
+  { label: "<50%",    min: 0.00, max: 0.50, color: "#c0311e", desc: "Exceptions" },
 ];
 
 export default function ConfidenceChart({ matches, exceptions }) {
@@ -28,10 +28,10 @@ export default function ConfidenceChart({ matches, exceptions }) {
           </div>
         </div>
         <div className="conf-chart-legend">
-          <span className="legend-dot" style={{ background: "#22c55e" }} /> High (≥90%)
-          <span className="legend-dot" style={{ background: "#f59e0b" }} /> Medium
-          <span className="legend-dot" style={{ background: "#f97316" }} /> Low
-          <span className="legend-dot" style={{ background: "#ef4444" }} /> Exception
+          <span className="legend-dot" style={{ background: "#2f6feb" }} /> High (≥90%)
+          <span className="legend-dot" style={{ background: "#7ea1f1" }} /> Medium
+          <span className="legend-dot" style={{ background: "#c0d1f8" }} /> Low
+          <span className="legend-dot" style={{ background: "#c0311e" }} /> Exception
         </div>
       </div>
 
@@ -69,9 +69,9 @@ function InsightRow({ buckets, total }) {
 
   return (
     <div className="insight-text">
-      <span className="insight-highlight" style={{ color: "#22c55e" }}>{highPct}%</span>
+      <span className="insight-highlight" style={{ color: "#2f6feb" }}>{highPct}%</span>
       {" "}of all decisions were made with ≥90% confidence.{" "}
-      <span className="insight-highlight" style={{ color: "#ef4444" }}>{exceptions}</span>
+      <span className="insight-highlight" style={{ color: "#c0311e" }}>{exceptions}</span>
       {" "}records fell below the confidence threshold and were flagged for human review.
     </div>
   );

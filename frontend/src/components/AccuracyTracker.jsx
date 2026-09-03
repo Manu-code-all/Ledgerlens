@@ -7,7 +7,7 @@ const PY  = 28;   // vertical padding
 const CW  = W - PX * 2;
 const CH  = H - PY * 2;
 
-const COLORS = ["#8892a4", "#3b82f6", "#a855f7", "#22c55e"];
+const COLORS = ["#9a9aa4", "#2f6feb", "#2f6feb", "#178a4c"];
 const STAGE_LABELS = [
   { top: "Start",     bot: "0 matched" },
   { top: "Stage 1",   bot: "Rules" },
@@ -73,8 +73,8 @@ export default function AccuracyTracker({ stats }) {
       <svg viewBox={`0 0 ${W} ${H}`} width="100%" className="tracker-svg">
         <defs>
           <linearGradient id="fillGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%"   stopColor="#6366f1" stopOpacity="0.18" />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.01" />
+            <stop offset="0%"   stopColor="#2f6feb" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#2f6feb" stopOpacity="0.01" />
           </linearGradient>
         </defs>
 
@@ -83,10 +83,10 @@ export default function AccuracyTracker({ stats }) {
           <g key={pct}>
             <line
               x1={PX} y1={toY(pct)} x2={PX + CW} y2={toY(pct)}
-              stroke="rgba(255,255,255,0.05)" strokeWidth="1"
+              stroke="rgba(0,0,0,0.06)" strokeWidth="1"
             />
             <text x={PX - 8} y={toY(pct) + 4} textAnchor="end"
-              fontSize="10" fill="rgba(136,146,164,0.7)">
+              fontSize="10" fill="rgba(107,107,118,0.8)">
               {pct}%
             </text>
           </g>
@@ -100,7 +100,7 @@ export default function AccuracyTracker({ stats }) {
           ref={lineRef}
           points={polyline}
           fill="none"
-          stroke="#6366f1"
+          stroke="#2f6feb"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -109,7 +109,7 @@ export default function AccuracyTracker({ stats }) {
         {/* Dots + labels */}
         {pts.map((p, i) => (
           <g key={i} style={{ animation: `dotPop 0.3s ease ${0.3 + i * 0.3}s both` }}>
-            <circle cx={p.x} cy={p.y} r="6" fill={COLORS[i]} stroke="var(--bg-color,#0f1117)" strokeWidth="2" />
+            <circle cx={p.x} cy={p.y} r="6" fill={COLORS[i]} stroke="#ffffff" strokeWidth="2" />
             {/* value label above dot */}
             <text x={p.x} y={p.y - 12} textAnchor="middle" fontSize="12"
               fontWeight="700" fill={COLORS[i]}>
@@ -117,11 +117,11 @@ export default function AccuracyTracker({ stats }) {
             </text>
             {/* stage label below chart */}
             <text x={p.x} y={PY + CH + 18} textAnchor="middle" fontSize="11"
-              fontWeight="600" fill="rgba(226,232,240,0.9)">
+              fontWeight="600" fill="rgba(24,24,27,0.85)">
               {STAGE_LABELS[i].top}
             </text>
             <text x={p.x} y={PY + CH + 31} textAnchor="middle" fontSize="10"
-              fill="rgba(136,146,164,0.8)">
+              fill="rgba(107,107,118,0.8)">
               {STAGE_LABELS[i].bot}
             </text>
           </g>
@@ -130,7 +130,7 @@ export default function AccuracyTracker({ stats }) {
         {/* Vertical stage separators */}
         {pts.slice(1).map((p, i) => (
           <line key={i} x1={p.x} y1={PY} x2={p.x} y2={PY + CH}
-            stroke="rgba(255,255,255,0.04)" strokeWidth="1" strokeDasharray="3,3" />
+            stroke="rgba(0,0,0,0.05)" strokeWidth="1" strokeDasharray="3,3" />
         ))}
       </svg>
     </div>

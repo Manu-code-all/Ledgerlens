@@ -8,6 +8,7 @@ import ConfidenceChart from "./components/ConfidenceChart";
 import ExportButton from "./components/ExportButton";
 import AccuracyTracker from "./components/AccuracyTracker";
 import ROICalculator from "./components/ROICalculator";
+import RunConfigCard from "./components/RunConfigCard";
 
 const TABS = ["Matches", "Exceptions", "Audit Trail"];
 
@@ -61,7 +62,21 @@ export default function App() {
       </header>
 
       <main>
-        <UploadPanel onSubmit={handleUpload} loading={loading} />
+        <div className="top-row">
+          <div className="top-row-left">
+            <UploadPanel
+              onSubmit={handleUpload}
+              loading={loading}
+              compact={!!result && !loading}
+            />
+            {result && !loading && (
+              <RunConfigCard stats={result.stats} />
+            )}
+          </div>
+          {result && !loading && (
+            <ROICalculator stats={result.stats} />
+          )}
+        </div>
 
         {error && (
           <div className="error-banner">
@@ -83,14 +98,13 @@ export default function App() {
           <>
             <MetricTiles stats={result.stats} />
 
-            <AccuracyTracker stats={result.stats} />
-
-            <ROICalculator stats={result.stats} />
-
-            <ConfidenceChart
-              matches={result.matches}
-              exceptions={result.exceptions}
-            />
+            <div className="analytics-row">
+              <AccuracyTracker stats={result.stats} />
+              <ConfidenceChart
+                matches={result.matches}
+                exceptions={result.exceptions}
+              />
+            </div>
 
             <div className="tab-bar-row">
               <div className="tab-bar">
