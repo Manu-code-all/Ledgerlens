@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 const STRATEGY_COLORS = {
   REF:      "chip-blue",
-  "AMT+DATE": "chip-teal",
-  BATCH:    "chip-purple",
-  AI:       "chip-green",
+  "AMT+DATE": "chip-blue",
+  BATCH:    "chip-blue",
+  AI:       "chip-blue",
 };
 
 export default function MatchesTable({ matches }) {
@@ -30,8 +30,8 @@ export default function MatchesTable({ matches }) {
           {matches.map((m) => {
             const isOpen = expanded === m.settlement_id;
             return (
-              <>
-                <tr key={m.settlement_id} className={isOpen ? "row-expanded" : ""}>
+              <Fragment key={m.settlement_id}>
+                <tr className={isOpen ? "row-expanded" : ""}>
                   <td className="mono">{m.settlement_id}</td>
                   <td className="mono">{m.bank_txn_id}</td>
                   <td>
@@ -51,7 +51,7 @@ export default function MatchesTable({ matches }) {
                   </td>
                 </tr>
                 {isOpen && m.reason && (
-                  <tr key={m.settlement_id + "-reason"} className="reason-row">
+                  <tr className="reason-row">
                     <td colSpan={5}>
                       <div className="reason-box">
                         <span className="reason-label">AI reasoning:</span> {m.reason}
@@ -59,7 +59,7 @@ export default function MatchesTable({ matches }) {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>
@@ -70,11 +70,10 @@ export default function MatchesTable({ matches }) {
 
 function ConfidenceBar({ value }) {
   const pct = Math.round((value || 0) * 100);
-  const color = pct >= 90 ? "#22c55e" : pct >= 60 ? "#f59e0b" : "#ef4444";
   return (
     <div className="conf-bar-wrap" title={pct + "%"}>
       <div className="conf-bar-bg">
-        <div className="conf-bar-fill" style={{ width: pct + "%", background: color }} />
+        <div className="conf-bar-fill" style={{ width: pct + "%" }} />
       </div>
       <span className="conf-pct">{pct}%</span>
     </div>

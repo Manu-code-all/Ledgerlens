@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const DEFAULTS = { feeRate: 2, dateWindow: 3, confidenceThreshold: 50 };
 
-export default function UploadPanel({ onSubmit, loading }) {
+export default function UploadPanel({ onSubmit, loading, compact }) {
   const [settlements, setSettlements] = useState(null);
   const [bank, setBank]               = useState(null);
   const [showAdv, setShowAdv]         = useState(false);
@@ -23,89 +23,104 @@ export default function UploadPanel({ onSubmit, loading }) {
   }
 
   return (
-    <form className="upload-panel" onSubmit={handleSubmit}>
-      <div className="upload-row">
+    <form className={"upload-panel" + (compact ? " upload-panel-compact" : "")} onSubmit={handleSubmit}>
+      <div className={"upload-row" + (compact ? " upload-row-compact" : "")}>
         <FileInput
           label="settlements.csv"
           hint="Payment gateway export"
           onChange={setSettlements}
           file={settlements}
+          compact={compact}
         />
         <FileInput
           label="bank_statement.csv"
           hint="Bank credit lines"
           onChange={setBank}
           file={bank}
+          compact={compact}
         />
-      </div>
-
-      <div className="adv-toggle-row">
-        <button
-          type="button"
-          className="adv-toggle"
-          onClick={() => setShowAdv((v) => !v)}
-        >
-          {showAdv ? "▲" : "▼"} Advanced Settings
-        </button>
-        {!showAdv && (
-          <span className="adv-defaults">
-            Fee {params.feeRate}% · Date ±{params.dateWindow}d · Confidence ≥{params.confidenceThreshold}%
-          </span>
+        {compact && (
+          <button
+            type="submit"
+            className="run-btn run-btn-sm"
+            disabled={!settlements || !bank || loading}
+          >
+            {loading ? "Running…" : "Re-run"}
+          </button>
         )}
       </div>
 
-      {showAdv && (
-        <div className="adv-panel">
-          <Slider
-            label="Fee Rate"
-            value={params.feeRate}
-            min={0.5} max={5} step={0.1}
-            format={(v) => `${v.toFixed(1)}%`}
-            hint="Razorpay platform fee deducted before settlement"
-            onChange={(v) => setParam("feeRate", v)}
-          />
-          <Slider
-            label="Date Window"
-            value={params.dateWindow}
-            min={1} max={14} step={1}
-            format={(v) => `±${v} days`}
-            hint="How many days of lag to allow between settlement and bank dates"
-            onChange={(v) => setParam("dateWindow", v)}
-          />
-          <Slider
-            label="Confidence Threshold"
-            value={params.confidenceThreshold}
-            min={10} max={90} step={5}
-            format={(v) => `${v}%`}
-            hint="AI matches below this confidence are sent to exceptions"
-            onChange={(v) => setParam("confidenceThreshold", v)}
-          />
-          <button
-            type="button"
-            className="reset-btn"
-            onClick={() => setParams(DEFAULTS)}
-          >
-            Reset to defaults
-          </button>
-        </div>
-      )}
+      {!compact && (
+        <>
+          <div className="adv-toggle-row">
+            <button
+              type="button"
+              className="adv-toggle"
+              onClick={() => setShowAdv((v) => !v)}
+            >
+              {showAdv ? "▲" : "▼"} Advanced Settings
+            </button>
+            {!showAdv && (
+              <span className="adv-defaults">
+                Fee {params.feeRate}% · Date ±{params.dateWindow}d · Confidence ≥{params.confidenceThreshold}%
+              </span>
+            )}
+          </div>
 
-      <button
-        type="submit"
-        className="run-btn"
-        disabled={!settlements || !bank || loading}
-      >
-        {loading ? "Running…" : "Run Reconciliation"}
-      </button>
+          {showAdv && (
+            <div className="adv-panel">
+              <Slider
+                label="Fee Rate"
+                value={params.feeRate}
+                min={0.5} max={5} step={0.1}
+                format={(v) => `${v.toFixed(1)}%`}
+                hint="Razorpay platform fee deducted before settlement"
+                onChange={(v) => setParam("feeRate", v)}
+              />
+              <Slider
+                label="Date Window"
+                value={params.dateWindow}
+                min={1} max={14} step={1}
+                format={(v) => `±${v} days`}
+                hint="How many days of lag to allow between settlement and bank dates"
+                onChange={(v) => setParam("dateWindow", v)}
+              />
+              <Slider
+                label="Confidence Threshold"
+                value={params.confidenceThreshold}
+                min={10} max={90} step={5}
+                format={(v) => `${v}%`}
+                hint="AI matches below this confidence are sent to exceptions"
+                onChange={(v) => setParam("confidenceThreshold", v)}
+              />
+              <button
+                type="button"
+                className="reset-btn"
+                onClick={() => setParams(DEFAULTS)}
+              >
+                Reset to defaults
+              </button>
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="run-btn"
+            disabled={!settlements || !bank || loading}
+          >
+            {loading ? "Running…" : "Run Reconciliation"}
+          </button>
+        </>
+      )}
     </form>
   );
 }
 
-function FileInput({ label, hint, onChange, file }) {
+function FileInput({ label, hint, onChange, file, compact }) {
   return (
-    <label className={"file-input" + (file ? " has-file" : "")}>
+    <label className={"file-input" + (file ? " has-file" : "") + (compact ? " file-input-compact" : "")}>
       <span className="file-label">{label}</span>
-      <span className="file-hint">{file ? file.name : hint}</span>
+      {!compact && <span className="file-hint">{file ? file.name : hint}</span>}
       <input
         type="file"
         accept=".csv"

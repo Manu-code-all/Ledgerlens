@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 export default function ExceptionsTable({ exceptions }) {
   const [expanded, setExpanded] = useState(null);
@@ -35,8 +35,8 @@ export default function ExceptionsTable({ exceptions }) {
             const nm     = e.near_miss || {};
             const isOpen = expanded === e.settlement_id;
             return (
-              <>
-                <tr key={e.settlement_id} className={"exception-row" + (isOpen ? " row-expanded" : "")}>
+              <Fragment key={e.settlement_id}>
+                <tr className={"exception-row" + (isOpen ? " row-expanded" : "")}>
                   <td className="mono">{e.settlement_id}</td>
                   <td>
                     <span className="chip chip-red">
@@ -66,7 +66,7 @@ export default function ExceptionsTable({ exceptions }) {
                 </tr>
 
                 {isOpen && nm.suggestion && (
-                  <tr key={e.settlement_id + "-nm"} className="reason-row">
+                  <tr className="reason-row">
                     <td colSpan={5}>
                       <div className="near-miss-box">
                         <div className="near-miss-box-header">
@@ -88,7 +88,7 @@ export default function ExceptionsTable({ exceptions }) {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

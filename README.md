@@ -8,6 +8,59 @@ decision, its confidence, and its business impact.
 
 ---
 
+## Quick Start
+
+The dashboard is two servers (API + frontend) running together. Follow these
+steps in order — skipping the `.env` step or only starting one server is the
+most common way this breaks.
+
+**Prerequisites:** Python 3.10+, Node.js 18+, and a free
+[Groq API key](https://console.groq.com/keys) (no credit card required).
+
+**1. Clone and install dependencies**
+```bash
+git clone https://github.com/Manu-code-all/Ledgerlens.git
+cd Ledgerlens
+pip install -r requirements.txt
+cd frontend && npm install && cd ..
+```
+
+**2. Add your Groq API key**
+
+Create a file named `.env` in the project root (same folder as this README)
+containing exactly one line:
+```
+GROQ_API_KEY=your_key_here
+```
+Without this, Stage 2 (the AI agent) will fail — Stage 1 and 1.5 still work.
+
+**3. Generate the synthetic dataset**
+```bash
+python engine/generate_data.py
+```
+
+**4. Start both servers — each in its own terminal, and leave both running**
+```bash
+# Terminal 1 — API server (port 8000)
+uvicorn api.main:app --reload --port 8000
+```
+```bash
+# Terminal 2 — dashboard (port 5173)
+cd frontend
+npm run dev
+```
+
+**5. Open the dashboard**
+
+Go to `http://localhost:5173`, upload `data/settlements.csv` and
+`data/bank_statement.csv`, then click **Run Reconciliation**.
+
+> **Seeing "Cannot reach the LedgerLens API server"?** Terminal 1 (the API)
+> isn't running, or isn't running on port 8000. Go back to step 4 — the
+> dashboard needs both terminals open at the same time, not just one.
+
+---
+
 ## The problem
 
 A finance team ends the month with two lists that are supposed to agree:
@@ -110,33 +163,15 @@ Beyond the core pipeline, the React dashboard adds:
   into hours and cost saved per month at any volume
 - **Export** — full report as `.txt`, matches and exceptions as `.csv`
 
-## Running it
+## Running the pipeline without the dashboard
 
-**Generate data:**
-```bash
-python engine/generate_data.py
-```
-
-**Run the pipeline from the CLI:**
+For a quick CLI check (no servers, no browser) — after completing steps 1-3
+of Quick Start above:
 ```bash
 python engine/run_full.py
 ```
-
-**Run the full stack:**
-```bash
-# Terminal 1 — API
-uvicorn api.main:app --reload --port 8000
-
-# Terminal 2 — Dashboard
-cd frontend
-npm run dev
-```
-
-Then open `http://localhost:5173`, upload `data/settlements.csv` and
-`data/bank_statement.csv`, and click Run Reconciliation.
-
-Requires a `.env` file at the project root with `GROQ_API_KEY=<your key>`
-(never commit this file — it's gitignored).
+Prints match rate, accuracy, exceptions, and throughput straight to the
+terminal, and writes `data/audit_log_full.jsonl`.
 
 ## Tests
 

@@ -6,9 +6,9 @@ const STAGE_COLORS = {
 
 const STRATEGY_CHIP = {
   REF:        "chip-blue",
-  "AMT+DATE": "chip-teal",
-  BATCH:      "chip-purple",
-  AI:         "chip-green",
+  "AMT+DATE": "chip-blue",
+  BATCH:      "chip-blue",
+  AI:         "chip-blue",
 };
 
 export default function AuditTrail({ entries }) {
@@ -84,12 +84,11 @@ export default function AuditTrail({ entries }) {
 }
 
 function ConfBar({ value }) {
-  const pct   = Math.round((value || 0) * 100);
-  const color = pct >= 90 ? "#22c55e" : pct >= 60 ? "#f59e0b" : "#ef4444";
+  const pct = Math.round((value || 0) * 100);
   return (
     <div className="conf-bar-wrap">
       <div className="conf-bar-bg">
-        <div className="conf-bar-fill" style={{ width: pct + "%", background: color }} />
+        <div className="conf-bar-fill" style={{ width: pct + "%" }} />
       </div>
       <span className="conf-pct">{pct}%</span>
     </div>
